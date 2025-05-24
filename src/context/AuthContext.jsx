@@ -24,12 +24,21 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
+  const arrayBufferToBase64 = (buffer) => {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+  };
+
   const login = async (email, password) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get('/api/user-profiles/all');
+      const response = await axios.get('http://192.168.0.101:8080/api/user-profiles/all');
       const users = response.data;
       
       const matchedUser = users.find(u => u.email === email && u.password === password);
@@ -40,7 +49,7 @@ export const AuthProvider = ({ children }) => {
           email: matchedUser.email,
           firstName: matchedUser.name.first,
           lastName: matchedUser.name.last,
-          photo: matchedUser.photo ? `data:image/jpeg;base64,${Buffer.from(matchedUser.photo).toString('base64')}` : null,
+          photo: matchedUser.photo ? `data:image/jpeg;base64,${arrayBufferToBase64(matchedUser.photo)}` : null,
           username: matchedUser.username
         };
         
@@ -51,7 +60,8 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Invalid email or password');
       }
     } catch (err) {
-      setError(err.message || 'Failed to login. Please try again.');
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to login. Please try again.');
       return false;
     } finally {
       setLoading(false);
