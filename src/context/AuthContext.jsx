@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get('http://192.168.0.101:8080/api/user-profiles/all');
+      const response = await axios.get('/api/user-profiles/all');
       const users = response.data;
       
       const matchedUser = users.find(u => u.email === email && u.password === password);
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Invalid email or password');
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Failed to login. Please try again.');
       return false;
     } finally {
       setLoading(false);
